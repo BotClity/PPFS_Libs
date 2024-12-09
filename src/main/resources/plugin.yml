@@ -1,0 +1,4 @@
+name: PPFS_Libs
+version: '${project.version}'
+main: com.ppfs.ppfs_libs.PPFS_Libs
+api-version: '1.16'
