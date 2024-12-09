@@ -39,7 +39,7 @@ jobs:
           artifacts: target/*.jar
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          name: Release v${{ github.ref_name }}
           commit: ${{ github.sha }}
           body: |
             Automated release for build ${{ github.run_number }}.
