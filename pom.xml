@@ -12,6 +12,7 @@
     <name>PPFS_Libs</name>
 
     <properties>
+        <maven.compiler.release>16</maven.compiler.release>
         <java.version>16</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -32,28 +33,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.2</version>
                 <configuration>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -74,7 +61,7 @@
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -90,10 +77,19 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>jitpack</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </distributionManagement>
+    <description>Library for PPFS Minecraft plugins</description>
+    <url>https://github.com/username/PPFS_Libs</url>
+    <scm>
+        <connection>scm:git:git://github.com/BotClity/PPFS_Libs.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:BotClity/PPFS_Libs.git</developerConnection>
+        <url>https://github.com/BotClity/PPFS_Libs</url>
+    </scm>
+    <developers>
+        <developer>
+            <id>BotClity</id>
+            <name>Botik</name>
+            <email>lubcenkok14@gmail.com</email>
+        </developer>
+    </developers>
+
 </project>
