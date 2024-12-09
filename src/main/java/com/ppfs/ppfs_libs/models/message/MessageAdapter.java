@@ -27,7 +27,7 @@ public class MessageAdapter implements JsonSerializer<Message>, JsonDeserializer
             }
             throw new JsonParseException("Некорректный формат ключа 'message'.");
         } catch (Exception e) {
-            PPFS_Libs.getLogger().error("Ошибка десериализации JSON: " + e.getMessage());
+            PPFS_Libs.getPaperLogger().error("Ошибка десериализации JSON: " + e.getMessage());
             throw new JsonParseException("Ошибка десериализации сообщения.", e);
         }
     }
@@ -46,8 +46,8 @@ public class MessageAdapter implements JsonSerializer<Message>, JsonDeserializer
             object.add("message", jsonArray);
             return object;
         } catch (Exception e) {
-            PPFS_Libs.getLogger().error("Ошибка сериализации объекта Message: " + e.getMessage());
-            PPFS_Libs.getLogger().error("Исходный объект: " + src.toString());
+            PPFS_Libs.getPaperLogger().error("Ошибка сериализации объекта Message: " + e.getMessage());
+            PPFS_Libs.getPaperLogger().error("Исходный объект: " + src.toString());
             throw new JsonParseException("Ошибка сериализации сообщения.", e);
         }
     }

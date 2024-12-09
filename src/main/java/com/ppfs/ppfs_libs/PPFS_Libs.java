@@ -9,14 +9,14 @@ public final class PPFS_Libs extends JavaPlugin {
     @Getter
     private static PPFS_Libs instance;
     @Getter
-    private static PaperLogger logger;
+    private static PaperLogger paperLogger;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         instance = this;
 
-        logger = LoggerService.getInstance().getOrCreateLogger("PPFS_Libs", true, true);
+        paperLogger = LoggerService.getInstance().getOrCreateLogger("PPFS_Libs", true, true);
 
     }
 
