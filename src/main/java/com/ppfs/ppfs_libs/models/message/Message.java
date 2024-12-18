@@ -1,28 +1,27 @@
 package com.ppfs.ppfs_libs.models.message;
 
+import com.ppfs.ppfs_libs.PPFS_Libs;
 import lombok.Getter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Getter
 public class Message {
-    private static final LegacyComponentSerializer legacyComponentSerializer = LegacyComponentSerializer.builder()
-            .character('§')
+    private final LegacyComponentSerializer serializer = LegacyComponentSerializer.builder()
             .hexColors()
             .build();
     private final List<String> rawMessages = new ArrayList<>();
     private final transient Placeholders placeholders = new Placeholders();
-    private static final Pattern COLOR_TAG_PATTERN = Pattern.compile("<(red|green|blue|yellow|gold|aqua|white|black|gray|dark_gray|dark_red|dark_green|dark_blue|dark_aqua|dark_purple|light_purple)>");
-    private static final Pattern HEX_PATTERN = Pattern.compile("<#([A-Fa-f0-9]{6})>");
+    private static final Pattern TAG_PATTERN = Pattern.compile("<(/?)([a-zA-Z_#0-9]+)>");
 
     public Message(String message) {
         this.rawMessages.add(message);
@@ -38,12 +37,10 @@ public class Message {
 
     public Message(Component... components){
         for (Component component: components){
-            rawMessages.add(legacyComponentSerializer.serialize(component));
+            rawMessages.add(serializer.serialize(component));
         }
     }
 
-
-    // Добавить сообщение
     public Message add(String... messages) {
         rawMessages.addAll(Arrays.asList(messages));
         return this;
@@ -54,20 +51,26 @@ public class Message {
         return this;
     }
 
-    public Message add(Component component){
-        rawMessages.add(legacyComponentSerializer.serialize(component));
+    public Message add(Message... msgs) {
+        for (Message msg : msgs) {
+            this.rawMessages.addAll(msg.rawMessages);
+        }
         return this;
     }
 
-    public Message add(Message... messages) {
-        for (Message message : messages) {
-            rawMessages.addAll(message.rawMessages);
+    public Message add(Component... components){
+        for (Component component: components){
+            rawMessages.add(serializer.serialize(component));
         }
         return this;
     }
 
     public void addPlaceholders(String placeholder, String value) {
         placeholders.add(new Placeholders().add(placeholder, value));
+    }
+
+    public void addPlaceholders(String placeholder, String... values) {
+        placeholders.add(new Placeholders().add(placeholder, values));
     }
 
     public void addPlaceholders(Placeholders placeholders) {
@@ -77,19 +80,32 @@ public class Message {
     public Component getComponent() {
         Component result = Component.empty();
         for (String rawMessage : rawMessages) {
-            String parsedMessage = placeholders.apply(rawMessage);
-            parsedMessage = applyHexAndColorTags(parsedMessage);
-            result = result.append(legacyComponentSerializer.deserialize(parsedMessage));
+            List<String> parsedMessage = placeholders.apply(rawMessage);
+            for (String str : parsedMessage) {
+                result = result.append(parseTagsToComponent(str));
+            }
         }
         return result;
     }
 
+    public List<Component> getComponents() {
+        List<Component> components = new ArrayList<>();
+        for (String rawMessage : rawMessages) {
+            List<String> parsedMessage = placeholders.apply(rawMessage);
+            for (String str : parsedMessage) {
+                components.add(parseTagsToComponent(str));
+            }
+        }
+        return components;
+    }
+
     public void send(Audience audience) {
         for (String rawMessage : rawMessages) {
-            String parsedMessage = placeholders.apply(rawMessage);
-            parsedMessage = applyHexAndColorTags(parsedMessage);
-            Component component = legacyComponentSerializer.deserialize(parsedMessage);
-            audience.sendMessage(component);
+            List<String> parsedMessage = placeholders.apply(rawMessage);
+            for (String str : parsedMessage) {
+                Component component = parseTagsToComponent(str);
+                audience.sendMessage(component);
+            }
         }
     }
 
@@ -99,94 +115,104 @@ public class Message {
         if (player != null) {
             send(player);
         } else {
-            System.out.println("Player with UUID " + uuid + " is not online.");
+            PPFS_Libs.getPaperLogger().warning("Player with UUID " + uuid + " is not online.");
         }
     }
 
-    public List<Component> getComponents() {
-        List<Component> components = new ArrayList<>();
-        for (String rawMessage : rawMessages) {
-            String parsedMessage = placeholders.apply(rawMessage);
-            parsedMessage = applyHexAndColorTags(parsedMessage);
-            Component component = legacyComponentSerializer.deserialize(parsedMessage);
-            components.add(component);
-        }
-        return components;
-    }
+    private Component parseTagsToComponent(String message) {
+        Component result = Component.empty();
+        result = result.style(style->style.decoration(TextDecoration.ITALIC, false));
+        Deque<TextColor> colorStack = new ArrayDeque<>();
+        Deque<TextDecoration> decorationStack = new ArrayDeque<>();
 
-    public String toString(){
-        return legacyComponentSerializer.serialize(getComponent());
-    }
+        Matcher matcher = TAG_PATTERN.matcher(message);
+        int lastEnd = 0;
 
-    private String applyColors(String message){
-        return message.replace('&', '§');
-    }
-
-    private String applyHexAndColorTags(String message) {
-        message = applyHexColors(message);
-        message = applyColors(message);
-
-        Matcher matcher = COLOR_TAG_PATTERN.matcher(message);
-        StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
-            String colorName = matcher.group(1).toLowerCase(); // Используем нижний регистр
-            String minecraftCode = getMinecraftColorCode(colorName);
-            if (minecraftCode != null) {
-                matcher.appendReplacement(buffer, "§" + minecraftCode);
+            String textBeforeTag = message.substring(lastEnd, matcher.start());
+            if (!textBeforeTag.isEmpty()) {
+                Component textComponent = Component.text(textBeforeTag);
+
+                if (!colorStack.isEmpty()) {
+                    textComponent = textComponent.color(colorStack.peek());
+                }
+                for (TextDecoration decoration : decorationStack) {
+                    textComponent = textComponent.decorate(decoration);
+                }
+                result = result.append(textComponent);
             }
+
+            String tagType = matcher.group(1);
+            String tagName = matcher.group(2);
+
+            if (tagType.isEmpty()) { // Открывающий тег
+                TextColor color = getTextColor(tagName);
+                if (color != null) {
+                    colorStack.push(color);
+                } else {
+                    TextDecoration decoration = getTextDecoration(tagName);
+                    if (decoration != null) {
+                        decorationStack.push(decoration);
+                    }
+                }
+            } else { // Закрывающий тег
+                TextColor color = getTextColor(tagName);
+                if (color != null && !colorStack.isEmpty()) {
+                    colorStack.pop();
+                } else {
+                    TextDecoration decoration = getTextDecoration(tagName);
+                    if (decoration != null && !decorationStack.isEmpty()) {
+                        decorationStack.pop();
+                    }
+                }
+            }
+            lastEnd = matcher.end();
         }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+
+        String remainingText = message.substring(lastEnd);
+        if (!remainingText.isEmpty()) {
+            Component textComponent = Component.text(remainingText);
+            if (!colorStack.isEmpty()) {
+                textComponent = textComponent.color(colorStack.peek());
+            }
+            for (TextDecoration decoration : decorationStack) {
+                textComponent = textComponent.decorate(decoration);
+            }
+            result = result.append(textComponent);
+        }
+        return result;
     }
 
-    private String getMinecraftColorCode(String colorName) {
-        switch (colorName) {
-            case "red":
-                return "c";
-            case "green":
-                return "a";
-            case "blue":
-                return "9";
-            case "yellow":
-                return "e";
-            case "gold":
-                return "6";
-            case "aqua":
-                return "b";
-            case "white":
-                return "f";
-            case "black":
-                return "0";
-            case "gray":
-                return "7";
-            case "dark_gray":
-                return "8";
-            case "dark_red":
-                return "4";
-            case "dark_green":
-                return "2";
-            case "dark_blue":
-                return "1";
-            case "dark_aqua":
-                return "3";
-            case "dark_purple":
-                return "5";
-            case "light_purple":
-                return "d";
-            default:
-                return null;
-        }
+    private TextColor getTextColor(String tagName) {
+        return switch (tagName.toLowerCase()) {
+            case "red" -> TextColor.color(0xFF5555);
+            case "green" -> TextColor.color(0x55FF55);
+            case "blue" -> TextColor.color(0x5555FF);
+            case "yellow" -> TextColor.color(0xFFFF55);
+            case "aqua" -> TextColor.color(0x55FFFF);
+            case "gold" -> TextColor.color(0xFFAA00);
+            case "gray" -> TextColor.color(0xAAAAAA);
+            case "dark_red" -> TextColor.color(0xAA0000);
+            case "dark_green" -> TextColor.color(0x00AA00);
+            case "dark_blue" -> TextColor.color(0x0000AA);
+            case "dark_aqua" -> TextColor.color(0x00AAAA);
+            case "dark_gray" -> TextColor.color(0x555555);
+            case "dark_purple" -> TextColor.color(0xAA00AA);
+            case "light_purple" -> TextColor.color(0xFF55FF);
+            case "white" -> TextColor.color(0xFFFFFF);
+            case "black" -> TextColor.color(0x000000);
+            default -> null;
+        };
     }
 
-
-    private String applyHexColors(String message) {
-        Matcher matcher = HEX_PATTERN.matcher(message);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String hexCode = matcher.group(1);
-            matcher.appendReplacement(buffer, "§x" + hexCode.replaceAll("\\.", "§$0"));
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+    private TextDecoration getTextDecoration(String tagName) {
+        return switch (tagName) {
+            case "bold" -> TextDecoration.BOLD;
+            case "italic" -> TextDecoration.ITALIC;
+            case "underline" -> TextDecoration.UNDERLINED;
+            case "strikethrough" -> TextDecoration.STRIKETHROUGH;
+            case "obfuscated" -> TextDecoration.OBFUSCATED;
+            default -> null;
+        };
     }
 }

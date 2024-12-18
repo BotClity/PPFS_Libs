@@ -1,14 +1,19 @@
 package com.ppfs.ppfs_libs.models.message;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Placeholders {
-    private final Map<String, String> placeholders = new HashMap<>();
+    private final Map<String, List<String>> placeholders = new HashMap<>();
 
-    public Placeholders add(String key, String value) {
-        if (key == null || value == null)throw new RuntimeException("key or value is null "+key+" "+value);
-        placeholders.put(key, value);
+    public Placeholders add(String key, String... values) {
+        if (key == null || values == null) throw new RuntimeException("key or value is null " + key + " " + values);
+        placeholders.put(key, List.of(values));
+        return this;
+    }
+
+    public Placeholders add(String key, List<String> values) {
+        if (key == null || values == null) throw new RuntimeException("key or values are null " + key + " " + values);
+        placeholders.put(key, new ArrayList<>(values));
         return this;
     }
 
@@ -17,12 +22,25 @@ public class Placeholders {
         return this;
     }
 
-    public String apply(String message) {
-        if (message == null || message.isEmpty()) return "";
-        String result = message;
-        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            result = result.replace("<" + entry.getKey() + ">", entry.getValue());
+    public List<String> apply(String message) {
+        if (message == null || message.isEmpty()) return Collections.emptyList();
+
+        List<String> results = new ArrayList<>();
+        results.add(message);
+
+        for (Map.Entry<String, List<String>> entry : placeholders.entrySet()) {
+            List<String> newResults = new ArrayList<>();
+            for (String result : results) {
+                if (result.contains("<" + entry.getKey() + ">")) {
+                    for (String replacement : entry.getValue()) {
+                        newResults.add(result.replace("<" + entry.getKey() + ">", replacement));
+                    }
+                } else {
+                    newResults.add(result);
+                }
+            }
+            results = newResults;
         }
-        return result;
+        return results;
     }
 }

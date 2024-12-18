@@ -1,38 +1,44 @@
 package com.ppfs.ppfs_libs.models.menu.slots;
 
-
 import com.google.common.collect.Sets;
 import com.ppfs.ppfs_libs.listeners.menu.slots.SlotListener;
 import com.ppfs.ppfs_libs.models.message.Message;
 import com.ppfs.ppfs_libs.models.message.Placeholders;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
+@ToString
+@EqualsAndHashCode
 public class Slot {
-
-    private boolean interactDisabled = true;
     private Message displayName;
     private Message lore;
     private Material material = Material.STONE;
     private transient SlotListener listener;
     private transient ItemMeta meta;
     private int position = -1;
-    private int amount;
+    private int amount = 1;
     private int customModelData;
-    private Map<Enchantment, Integer> enchantments = new HashMap<>();
+    private Map<Enchantment, Integer> enchantments = new ConcurrentHashMap<>();
     private Set<ItemFlag> itemFlags = new HashSet<>();
     private Placeholders placeholders = new Placeholders();
-
 
     public Slot() {
     }
@@ -62,8 +68,26 @@ public class Slot {
         return this;
     }
 
-    public boolean hasDisplayName(){
+    public Slot addDisplayName(Message additionalDisplayName) {
+        if (this.displayName == null) {
+            this.displayName = additionalDisplayName;
+        } else {
+            this.displayName.add(additionalDisplayName);
+        }
+        return this;
+    }
+
+    public boolean hasDisplayName() {
         return displayName != null;
+    }
+
+    public Slot setLore(String... lore) {
+        if (this.lore == null) {
+            this.lore = new Message(lore);
+        } else {
+            this.lore.add(lore);
+        }
+        return this;
     }
 
     public Slot setLore(Message lore) {
@@ -71,23 +95,26 @@ public class Slot {
         return this;
     }
 
-    public Slot setLore(String... lore) {
-        this.lore = new Message(lore);
+    public Slot addLore(Message lore) {
+        if (this.lore == null) {
+            this.lore = lore;
+        } else {
+            this.lore.add(lore);
+        }
         return this;
-    }
-
-    public boolean hasLore(){
-        return lore != null;
     }
 
     public Slot addLore(String... lore) {
-        this.lore.add(lore);
+        if (this.lore == null) {
+            this.lore = new Message(lore);
+        } else {
+            this.lore.add(lore);
+        }
         return this;
     }
 
-    public Slot addLore(Message lore) {
-        this.lore.add(lore);
-        return this;
+    public boolean hasLore() {
+        return lore != null;
     }
 
     public Slot setMaterial(Material material) {
@@ -129,8 +156,11 @@ public class Slot {
         return this;
     }
 
-    public Slot clearEnchantments(){
-        this.enchantments.clear();
+    /*
+    Убирает зачирования
+     */
+    public Slot clearEnchantments() {
+        this.enchantments = new ConcurrentHashMap<>();
         return this;
     }
 
@@ -150,18 +180,24 @@ public class Slot {
     }
 
     public Slot addItemFlag(ItemFlag... itemFlags) {
-        this.itemFlags.addAll(Arrays.asList(itemFlags));
+        if (itemFlags != null) {
+            this.itemFlags.addAll(Arrays.asList(itemFlags));
+        }
         return this;
     }
 
     public Slot setItemFlags(ItemFlag... itemFlags) {
-        if (itemFlags == null) return this;
-        this.itemFlags = Sets.newHashSet(itemFlags);
+        this.itemFlags = itemFlags != null ? Sets.newHashSet(itemFlags) : new HashSet<>();
         return this;
     }
 
-    public Slot setItemFlags(Set<ItemFlag> itemFlags) {
+    public Slot setItemFlags(@NotNull Set<ItemFlag> itemFlags) {
         this.itemFlags = itemFlags;
+        return this;
+    }
+
+    public Slot addItemFlags(Set<ItemFlag> itemFlags) {
+        this.itemFlags.addAll(itemFlags);
         return this;
     }
 
@@ -169,24 +205,19 @@ public class Slot {
         return new Slot().fromItemStack(item);
     }
 
-    public Slot fromItemStack(ItemStack item){
-
+    public Slot fromItemStack(ItemStack item) {
         setMaterial(item.getType());
         setAmount(item.getAmount());
 
         setDisplayName(new Message(item.displayName()));
 
-
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return this;
+        setMeta(meta);
 
         setEnchantments(meta.getEnchants());
-
-        List<Component> loreList = meta.lore();
-
-        if (loreList != null) {
-            Component[] lore = loreList.toArray(new Component[0]);
-            setLore(new Message(lore));
+        if (meta.lore() != null) {
+            setLore(new Message(meta.lore().toArray(new Component[0])));
         }
 
         if (meta.hasCustomModelData()) {
@@ -194,40 +225,98 @@ public class Slot {
         }
 
         setItemFlags(meta.getItemFlags());
-
         return this;
     }
 
+    public Placeholders getPlaceholders(HumanEntity player) {
+        return placeholders;
+    }
 
     public ItemStack toItemStack() {
         ItemStack item = new ItemStack(material);
-
         item.setAmount(amount);
 
-        ItemMeta meta = this.meta == null ? item.getItemMeta() : this.meta;
+        ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
         if (meta == null) return item;
 
         if (displayName != null) {
-            displayName.addPlaceholders(placeholders);
+            displayName.addPlaceholders(getPlaceholders());
             meta.displayName(displayName.getComponent());
         }
 
         if (lore != null) {
-            lore.addPlaceholders(placeholders);
+            lore.addPlaceholders(getPlaceholders());
             meta.lore(lore.getComponents());
         }
 
-        if (!enchantments.isEmpty())
-            enchantments.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
-
-        if (!itemFlags.isEmpty())
+        enchantments.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
+        if (!itemFlags.isEmpty()) {
             meta.addItemFlags(itemFlags.toArray(new ItemFlag[0]));
+        }
 
-        if (customModelData != 0)
-            meta.setCustomModelData(0);
+        if (customModelData != 0) {
+            meta.setCustomModelData(customModelData);
+        }
 
         item.setItemMeta(meta);
         return item;
+    }
 
+    public ItemStack toItemStack(HumanEntity player) {
+        ItemStack item = new ItemStack(material);
+        item.setAmount(amount);
+
+        ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
+        if (meta == null) return item;
+
+        if (displayName != null) {
+            displayName.addPlaceholders(getPlaceholders(player));
+            meta.displayName(displayName.getComponent());
+        }
+
+        if (lore != null) {
+            lore.addPlaceholders(getPlaceholders(player));
+            meta.lore(lore.getComponents());
+        }
+
+        enchantments.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
+        if (!itemFlags.isEmpty()) {
+            meta.addItemFlags(itemFlags.toArray(new ItemFlag[0]));
+        }
+
+        if (customModelData != 0) {
+            meta.setCustomModelData(customModelData);
+        }
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static class Builder {
+        private final Slot slot = new Slot();
+
+        public Builder material(Material material) {
+            slot.setMaterial(material);
+            return this;
+        }
+
+        public Builder displayName(Message displayName) {
+            slot.setDisplayName(displayName);
+            return this;
+        }
+
+        public Builder lore(Message lore) {
+            slot.setLore(lore);
+            return this;
+        }
+
+        public Builder enchantment(Enchantment enchantment, int level) {
+            slot.addEnchantment(enchantment, level);
+            return this;
+        }
+
+        public Slot build() {
+            return slot;
+        }
     }
 }
