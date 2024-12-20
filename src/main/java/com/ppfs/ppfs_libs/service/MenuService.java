@@ -106,9 +106,9 @@ public class MenuService implements Serializable, Listener {
             return;
         }
 
-        if (slot.isInteractDisabled()) {
-            event.setCancelled(true);
-        }
+//        if (slot.isInteractDisabled()) {
+//            event.setCancelled(true);
+//        }
 
         if (!slot.hasListener()) {
             return;

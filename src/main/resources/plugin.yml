@@ -1,4 +1,5 @@
 name: PPFS_Libs
-version: '${project.version}'
+version: ${project.version}
 main: com.ppfs.ppfs_libs.PPFS_Libs
+load: STARTUP
 api-version: '1.16'

@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 
-public class MenuHeadSlot extends Slot {
+public class HeadSlot extends Slot {
     public void setHeadValue(String value){
         ItemMeta meta = getMeta();
 

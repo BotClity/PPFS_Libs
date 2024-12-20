@@ -7,12 +7,14 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.*;
 
 public class LoggerService {
-    private final static Plugin plugin = PPFS_Libs.getInstance();
+    private static Plugin plugin;
     private final Logger centralLogger;
     private final BlockingQueue<LogEntry> logQueue;
     private final ExecutorService executor;
@@ -58,22 +60,30 @@ public class LoggerService {
         });
     }
 
+    public synchronized PaperLogger getLogger(String prefix) {
+        return loggerMap.get(prefix);
+    }
+
+    public synchronized PaperLogger getOrCreateLogger(String prefix) {
+        return loggerMap.computeIfAbsent(prefix, key-> createLogger(key, false, true));
+    }
+
     public synchronized PaperLogger getOrCreateLogger(String prefix, boolean writeToFile, boolean writeToConsole) {
         return loggerMap.computeIfAbsent(prefix, key -> createLogger(key, writeToFile, writeToConsole));
     }
 
     private PaperLogger createLogger(String prefix, boolean writeToFile, boolean writeToConsole) {
+        if (plugin == null) plugin = PPFS_Libs.getInstance();
         Logger logger = Logger.getLogger(prefix);
 
         logger.setUseParentHandlers(false);
 
         try {
-            File logsDir = new File(plugin.getDataFolder(), "logs");
-            if (!logsDir.exists() && !logsDir.mkdirs()) {
-                centralLogger.log(Level.WARNING, "Failed to create logs directory for plugin.");
-            }
-
             if (writeToFile) {
+                File logsDir = new File(plugin.getDataFolder(), "logs");
+                if (!logsDir.exists() && !logsDir.mkdirs()) {
+                    centralLogger.log(Level.WARNING, "Failed to create logs directory for plugin.");
+                }
                 logger.addHandler(createFileHandler(logsDir, prefix));
             }
 
@@ -87,7 +97,7 @@ public class LoggerService {
                 });
                 logger.addHandler(consoleHandler);
             }
-        } catch (IOException e) {
+        } catch (Exception e){
             centralLogger.log(Level.SEVERE, "Failed to create log file for: " + prefix, e);
         }
 
@@ -98,7 +108,7 @@ public class LoggerService {
 
 
     private FileHandler createFileHandler(File logsDir, String prefix) throws IOException {
-        String dateTime = new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new java.util.Date());
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date());
 
         String sanitizedPrefix = prefix.replaceAll("[^a-zA-Z0-9]", "_");
 
@@ -145,5 +155,9 @@ public class LoggerService {
                 handler.close();
             }
         });
+    }
+
+    public static void initialize(Plugin plugin) {
+        LoggerService.plugin = plugin;
     }
 }
