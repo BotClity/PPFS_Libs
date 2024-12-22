@@ -6,7 +6,7 @@
 
     <groupId>io.github.botclity</groupId>
     <artifactId>PPFS_Libs</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <packaging>jar</packaging>
 
     <name>PPFS_Libs</name>
@@ -22,13 +22,13 @@
         <developer>
             <id>PPFS</id>
             <name>PPFS_Studio</name>
-            <email>lubcenkok14@gmail.com</email>
+            <email>ppfs.studio@gmail.com</email>
         </developer>
     </developers>
     <licenses>
         <license>
             <name>The MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
+            <url>https://github.com/BotClity/PPFS_Libs/LICENSE.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -137,14 +137,18 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <outputFile>${project.build.directory}/${build.finalName}-shaded.jar
+                    </outputFile>
                     <relocations>
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
-                            <shadedPattern>com.ppfs.quests.nbtapi</shadedPattern>
+                            <shadedPattern>com.ppfs.ppfs_libs.nbtapi</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
@@ -156,6 +160,11 @@
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+            <layout>default</layout>
         </repository>
     </repositories>
 
@@ -177,6 +186,11 @@
             <artifactId>authlib</artifactId>
             <version>1.5.25</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>2.14.1</version>
         </dependency>
     </dependencies>
 

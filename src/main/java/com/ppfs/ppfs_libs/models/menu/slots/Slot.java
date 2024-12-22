@@ -156,9 +156,6 @@ public class Slot {
         return this;
     }
 
-    /*
-    Убирает зачирования
-     */
     public Slot clearEnchantments() {
         this.enchantments = new ConcurrentHashMap<>();
         return this;
@@ -236,8 +233,14 @@ public class Slot {
         ItemStack item = new ItemStack(material);
         item.setAmount(amount);
 
+        ItemMeta itemMeta = getMeta(item);
+
+        item.setItemMeta(itemMeta);
+        return item;
+    }
+
+    public ItemMeta getMeta(ItemStack item){
         ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
-        if (meta == null) return item;
 
         if (displayName != null) {
             displayName.addPlaceholders(getPlaceholders());
@@ -258,16 +261,11 @@ public class Slot {
             meta.setCustomModelData(customModelData);
         }
 
-        item.setItemMeta(meta);
-        return item;
+        return meta;
     }
 
-    public ItemStack toItemStack(HumanEntity player) {
-        ItemStack item = new ItemStack(material);
-        item.setAmount(amount);
-
+    public ItemMeta getMeta(ItemStack item, HumanEntity player) {
         ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
-        if (meta == null) return item;
 
         if (displayName != null) {
             displayName.addPlaceholders(getPlaceholders(player));
@@ -287,8 +285,16 @@ public class Slot {
         if (customModelData != 0) {
             meta.setCustomModelData(customModelData);
         }
+        return meta;
+    }
 
-        item.setItemMeta(meta);
+    public ItemStack toItemStack(HumanEntity player) {
+        ItemStack item = new ItemStack(material);
+        item.setAmount(amount);
+
+        ItemMeta itemMeta = getMeta(item, player);
+
+        item.setItemMeta(itemMeta);
         return item;
     }
 

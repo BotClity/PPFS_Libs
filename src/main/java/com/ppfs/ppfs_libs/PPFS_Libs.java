@@ -13,7 +13,6 @@ public final class PPFS_Libs extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
         LoggerService.initialize(this);
         instance = this;
         paperLogger = LoggerService.getInstance().getOrCreateLogger("PPFS_Libs", true, true);
@@ -22,6 +21,6 @@ public final class PPFS_Libs extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        LoggerService.getInstance().shutdown();
     }
 }

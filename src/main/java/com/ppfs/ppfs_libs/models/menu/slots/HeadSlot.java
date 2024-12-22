@@ -1,36 +1,71 @@
 package com.ppfs.ppfs_libs.models.menu.slots;
 
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
-import org.bukkit.Bukkit;
+import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
+import lombok.Getter;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import java.lang.reflect.Field;
+
 import java.util.UUID;
 
-
+@Getter
 public class HeadSlot extends Slot {
-    public void setHeadValue(String value){
-        ItemMeta meta = getMeta();
+    private String textureValue = null;
+    private OfflinePlayer owner = null;
 
-        GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
-        gameProfile.getProperties().put("textures", new Property("textures", value));
-        if (meta!= null){
-            Field field;
-            try{
-                field = meta.getClass().getDeclaredField("profile");
-                field.setAccessible(true);
-                field.set(meta, gameProfile);
-            }catch (IllegalAccessException | NoSuchFieldException e){
-                Bukkit.getLogger().warning("Failed to set head value");
-            }
+    @Override
+    public ItemStack toItemStack() {
+        return setupHeadValue(super.toItemStack());
+    }
+
+    @Override
+    public ItemStack toItemStack(HumanEntity player) {
+        return setupHeadValue(super.toItemStack());
+    }
+
+
+    private ItemStack setupHeadValue(ItemStack item){
+        if (textureValue != null && item.getType() == Material.PLAYER_HEAD && owner == null) {
+            NBT.modify(item, nbt -> {
+                ReadWriteNBT skullOwnerCompound = nbt.getOrCreateCompound("SkullOwner");
+
+                skullOwnerCompound.setUUID("Id", UUID.randomUUID());
+
+                skullOwnerCompound.getOrCreateCompound("Properties")
+                        .getCompoundList("textures")
+                        .addCompound()
+                        .setString("Value", textureValue);
+            });
         }
-        setMeta(meta);
+        return item;
     }
-    public void setHeadOwner(OfflinePlayer player){
-        SkullMeta meta = (SkullMeta) getMeta();
-        meta.setOwningPlayer(player);
-        setMeta(meta);
+
+    @Override
+    public ItemMeta getMeta(ItemStack item) {
+        return setupHeadOwner(super.getMeta(item));
     }
-}
+
+    @Override
+    public ItemMeta getMeta(ItemStack item, HumanEntity player) {
+        return setupHeadOwner(super.getMeta(item));
+    }
+
+    private ItemMeta setupHeadOwner(ItemMeta meta){
+        if (meta instanceof SkullMeta skullMeta && owner != null)
+            skullMeta.setOwningPlayer(owner);
+        return meta;
+    }
+
+    public Slot setHeadValue(String value){
+        this.textureValue = value;
+        return this;
+    }
+
+    public void setHeadOwner (OfflinePlayer player){
+            owner = player;
+        }
+    }

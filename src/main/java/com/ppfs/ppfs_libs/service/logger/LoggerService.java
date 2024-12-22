@@ -140,9 +140,20 @@ public class LoggerService {
         centralLogger.log(entry.level, entry.message, entry.throwable);
     }
 
+    public void flushLogs(){
+        logQueue.forEach(entry->{
+            if (entry != null) {
+                centralLogger.log(entry.level, "[Not sent log] " + entry.message, entry.throwable);
+            }
+        });
+    }
+
     public void shutdown() {
         running = false;
         executor.shutdown();
+
+        flushLogs();
+
         try {
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                 centralLogger.log(Level.WARNING, "LoggerService executor did not shut down in time.");

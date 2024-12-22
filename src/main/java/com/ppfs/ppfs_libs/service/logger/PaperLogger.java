@@ -28,53 +28,53 @@ public class PaperLogger {
     }
 
     public void info(String message) {
-        loggerService.send(new LogEntry(prefix, Level.INFO, prefix + message, null));
+        loggerService.send(new LogEntry(prefix, Level.INFO, message, null));
     }
 
     public void info(String format, Object... args) {
-        loggerService.send(new LogEntry(prefix, Level.INFO, prefix + String.format(format, args), null));
+        loggerService.send(new LogEntry(prefix, Level.INFO, String.format(format, args), null));
     }
 
     public void warning(String message) {
-        loggerService.send(new LogEntry(prefix, Level.WARNING, prefix + message, null));
+        loggerService.send(new LogEntry(prefix, Level.WARNING,  message, null));
     }
 
     public void warning(String format, Object... args) {
-        loggerService.send(new LogEntry(prefix, Level.WARNING, prefix + String.format(format, args), null));
+        loggerService.send(new LogEntry(prefix, Level.WARNING, String.format(format, args), null));
     }
 
     public void error(String message) {
-        loggerService.send(new LogEntry(prefix, Level.SEVERE, prefix + message, null));
+        loggerService.send(new LogEntry(prefix, Level.SEVERE,  message, null));
     }
 
     public void error(String format, Object... args) {
-        loggerService.send(new LogEntry(prefix, Level.SEVERE, prefix + String.format(format, args), null));
+        loggerService.send(new LogEntry(prefix, Level.SEVERE, String.format(format, args), null));
     }
 
     public void error(String message, Throwable throwable) {
-        loggerService.send(new LogEntry(prefix, Level.SEVERE, prefix + message, throwable));
+        loggerService.send(new LogEntry(prefix, Level.SEVERE, message, throwable));
     }
 
     public void error(String format, Throwable throwable, Object... args) {
-        loggerService.send(new LogEntry(prefix, Level.SEVERE, prefix + String.format(format, args), throwable));
+        loggerService.send(new LogEntry(prefix, Level.SEVERE, String.format(format, args), throwable));
     }
 
     public void debug(String message) {
-        loggerService.sendDebug(new LogEntry(prefix, Level.INFO, prefix + "DEBUG: " + message, null));
+        loggerService.sendDebug(new LogEntry(prefix, Level.INFO, "DEBUG: " + message, null));
 
     }
 
     public void debug(String format, Object... args) {
-        loggerService.sendDebug(new LogEntry(prefix, Level.INFO, prefix + "DEBUG: " + String.format(format, args), null));
+        loggerService.sendDebug(new LogEntry(prefix, Level.INFO, "DEBUG: " + String.format(format, args), null));
 
     }
 
     public void syncError(String message) {
-        loggerService.sendSync(new LogEntry(prefix, Level.SEVERE, prefix + message, null));
+        loggerService.sendSync(new LogEntry(prefix, Level.SEVERE, message, null));
     }
 
     public void syncError(String message, Throwable throwable) {
-        loggerService.sendSync(new LogEntry(prefix, Level.SEVERE, prefix + message, throwable));
+        loggerService.sendSync(new LogEntry(prefix, Level.SEVERE, message, throwable));
     }
 
 }
