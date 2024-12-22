@@ -6,7 +6,7 @@
 
     <groupId>io.github.botclity</groupId>
     <artifactId>PPFS_Libs</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <packaging>jar</packaging>
 
     <name>PPFS_Libs</name>
@@ -137,9 +137,8 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <outputFile>${project.build.directory}/${build.finalName}-shaded.jar
-                    </outputFile>
                     <relocations>
                         <relocation>
                             <pattern>de.tr7zw.changeme.nbtapi</pattern>
@@ -173,7 +172,7 @@
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
