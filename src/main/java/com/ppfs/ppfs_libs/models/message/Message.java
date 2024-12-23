@@ -119,6 +119,25 @@ public class Message {
         }
     }
 
+    public void sendActionBar(Audience audience) {
+        for (String rawMessage : rawMessages) {
+            List<String> parsedMessage = placeholders.apply(rawMessage);
+            for (String str : parsedMessage) {
+                Component component = parseTagsToComponent(str);
+                audience.sendActionBar(component);
+            }
+        }
+    }
+
+    public void sendActionBar(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (player != null) {
+            sendActionBar(player);
+        }else {
+            PPFS_Libs.getPaperLogger().warning("Player with UUID " + uuid + " is not online.");
+        }
+    }
+
     private Component parseTagsToComponent(String message) {
         Component result = Component.empty();
         result = result.style(style->style.decoration(TextDecoration.ITALIC, false));
