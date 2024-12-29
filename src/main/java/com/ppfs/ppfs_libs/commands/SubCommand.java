@@ -8,10 +8,26 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
+/**
+ * Абстрактный класс для подкоманд, поддерживающий вложенные команды.
+ */
 public abstract class SubCommand {
+
+    /**
+     * Карта вложенных подкоманд, где ключ — имя команды, а значение — объект подкоманды.
+     */
     private final Map<String, SubCommand> nestedSubCommands = new HashMap<>();
+
+    /**
+     * Имя текущей команды.
+     */
     @Getter
     private final String name;
+
+    /**
+     * Флаг, указывающий, может ли команда быть выполнена только игроками.
+     * По умолчанию: true.
+     */
     @Setter
     private boolean onlyPlayers = true;
 
@@ -19,13 +35,26 @@ public abstract class SubCommand {
         this.name = name;
     }
 
+    /**
+     * Регистрирует вложенную подкоманду.
+     *
+     * @param subCommand Объект вложенной подкоманды.
+     */
     public void registerSubCommand(SubCommand subCommand) {
         nestedSubCommands.put(subCommand.getName().toLowerCase(), subCommand);
     }
 
+    /**
+     * Выполняет команду. Если есть вложенные подкоманды, передает управление им.
+     *
+     * @param sender Отправитель команды (игрок или консоль).
+     * @param command Объект команды.
+     * @param label Лейбл команды (основное имя команды).
+     * @param args Аргументы команды.
+     */
     public void execute(CommandSender sender, Command command, String label, String... args) {
         if (onlyPlayers && !(sender instanceof Player)) {
-            handle(sender, command, label, args);
+            onlyPlayerExecute(sender, command, label, args);
             return;
         }
 
@@ -42,32 +71,59 @@ public abstract class SubCommand {
         }
     }
 
+    /**
+     * Предоставляет список возможных завершений для автодополнения.
+     *
+     * @param sender Отправитель команды.
+     * @param args Аргументы команды.
+     * @return Список возможных завершений.
+     */
     public List<String> complete(CommandSender sender, String... args) {
         if (args.length == 1) {
-            List<String> completions = new ArrayList<>();
-            for (String key : nestedSubCommands.keySet()) {
-                if (sender.hasPermission(name.toLowerCase() + "." + key.toLowerCase())) {
-                    completions.add(key);
-                }
-            }
-            return completions;
+            return new ArrayList<>(nestedSubCommands.keySet());
         }
+
         SubCommand subCommand = nestedSubCommands.get(args[0].toLowerCase());
         if (subCommand != null) {
             return subCommand.complete(sender, Arrays.copyOfRange(args, 1, args.length));
         }
+
         return Collections.emptyList();
     }
 
+    /**
+     * Основная логика команды, выполняется, если нет вложенных команд.
+     *
+     * @param sender Отправитель команды.
+     * @param command Объект команды.
+     * @param label Лейбл команды.
+     * @param args Аргументы команды.
+     */
     public void handle(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("This command has no specific action.");
     }
 
-    public void noPermission(CommandSender sender, Command command, String label, String... args){
+    /**
+     * Сообщает отправителю, что у него нет разрешения на выполнение команды.
+     *
+     * @param sender Отправитель команды.
+     * @param command Объект команды.
+     * @param label Лейбл команды.
+     * @param args Аргументы команды.
+     */
+    public void noPermission(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("No permissions");
     }
 
-    public void onlyPlayerExecute(CommandSender sender, Command command, String label, String... args){
+    /**
+     * Сообщает отправителю, что команда может быть выполнена только игроками.
+     *
+     * @param sender Отправитель команды.
+     * @param command Объект команды.
+     * @param label Лейбл команды.
+     * @param args Аргументы команды.
+     */
+    public void onlyPlayerExecute(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("This command can only be executed by players.");
     }
 }

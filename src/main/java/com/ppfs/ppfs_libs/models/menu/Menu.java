@@ -40,7 +40,7 @@ public class Menu implements IMenu, Serializable {
         this.viewers = new HashMap<>();
     }
 
-    public Menu clearMenu(){
+    public Menu clearMenu() {
         slots.clear();
         inventory.clear();
         return this;
@@ -51,6 +51,7 @@ public class Menu implements IMenu, Serializable {
         this.viewers = new HashMap<>();
         updateInventory();
     }
+
 
     public Slot getSlot(int slot) {
         return slots.get(slot);
@@ -71,7 +72,7 @@ public class Menu implements IMenu, Serializable {
     }
 
     public void updateInventory() {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 inventory.clear();
@@ -121,15 +122,5 @@ public class Menu implements IMenu, Serializable {
 
     public boolean hasOnDrop() {
         return onDrop != null;
-    }
-
-    public static Menu fromJson(String json, int rows) {
-        Menu menu = new com.google.gson.Gson().fromJson(json, Menu.class);
-        menu.initInventory(rows);
-        return menu;
-    }
-
-    public String toJson() {
-        return new com.google.gson.Gson().toJson(this);
     }
 }
