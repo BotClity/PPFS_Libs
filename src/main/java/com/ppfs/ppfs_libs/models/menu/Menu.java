@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.Serializable;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 public class Menu implements IMenu, Serializable {
     private final String title;
     private final String id;
+    private transient Plugin plugin;
 
     private transient Inventory inventory;
     private transient HashMap<String, HumanEntity> viewers;
@@ -32,7 +34,8 @@ public class Menu implements IMenu, Serializable {
     private MenuOnClick click;
     private MenuOnDrop onDrop;
 
-    public Menu(String id, String title, int rows) {
+    public Menu(String id, String title, int rows, Plugin plugin) {
+        this.plugin = plugin;
         this.id = id;
         this.title = title;
         this.slots = new HashMap<>();
@@ -72,6 +75,7 @@ public class Menu implements IMenu, Serializable {
     }
 
     public void updateInventory() {
+        if (plugin == null) return;
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -86,7 +90,7 @@ public class Menu implements IMenu, Serializable {
                     player.updateInventory();
                 });
             }
-        }.runTask(PPFS_Libs.getInstance());
+        }.runTask(plugin);
 
     }
 
