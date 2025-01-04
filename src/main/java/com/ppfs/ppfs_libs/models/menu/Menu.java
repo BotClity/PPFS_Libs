@@ -1,10 +1,7 @@
 package com.ppfs.ppfs_libs.models.menu;
 
-import com.ppfs.ppfs_libs.PPFS_Libs;
-import com.ppfs.ppfs_libs.listeners.menu.MenuOnClick;
-import com.ppfs.ppfs_libs.listeners.menu.MenuOnClose;
-import com.ppfs.ppfs_libs.listeners.menu.MenuOnDrop;
 import com.ppfs.ppfs_libs.models.menu.slots.Slot;
+import com.ppfs.ppfs_libs.models.menu.slots.actions.*;
 import com.ppfs.ppfs_libs.service.MenuService;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -20,39 +18,38 @@ import java.util.HashMap;
 
 @Setter
 @Getter
-public class Menu implements IMenu, Serializable {
+public class Menu implements Serializable, InventoryHolder {
+
+    protected MenuService menuService;
+
     private final String title;
     private final String id;
-    private transient Plugin plugin;
+    private boolean canBeClosed = true;
+    private boolean takeItems = false;
 
     private transient Inventory inventory;
-    private transient HashMap<String, HumanEntity> viewers;
 
     private HashMap<Integer, Slot> slots;
-    private boolean interactDisabled = true;
-    private MenuOnClose onClose;
-    private MenuOnClick click;
-    private MenuOnDrop onDrop;
+
+    private OnClose inventoryClose;
+    private OnClick outsideClick;
+    private OnClick inventoryClick;
+    private OnClick ownInventoryClick;
+    private OnDrop inventoryDrop;
+    private OnDrag inventoryDrag;
+    private OnInteract inventoryInteract;
 
     public Menu(String id, String title, int rows, Plugin plugin) {
-        this.plugin = plugin;
         this.id = id;
         this.title = title;
         this.slots = new HashMap<>();
-        this.inventory = Bukkit.createInventory(null, rows, title);
-        this.viewers = new HashMap<>();
+        this.inventory = Bukkit.createInventory(this, rows, title);
     }
 
     public Menu clearMenu() {
         slots.clear();
         inventory.clear();
         return this;
-    }
-
-    public void initInventory(int rows) {
-        this.inventory = Bukkit.createInventory(null, rows, title);
-        this.viewers = new HashMap<>();
-        updateInventory();
     }
 
 
@@ -74,15 +71,15 @@ public class Menu implements IMenu, Serializable {
         return this;
     }
 
-    public void updateInventory() {
-        if (plugin == null) return;
+    public void updateInventory(HumanEntity player) {
+        if (menuService == null) return;
         new BukkitRunnable() {
             @Override
             public void run() {
                 inventory.clear();
                 slots.forEach((position, slot) -> {
                     if (slot != null) {
-                        inventory.setItem(position, slot.toItemStack());
+                        inventory.setItem(position, slot.toItemStack(player));
                     }
                 });
                 inventory.getViewers().forEach(viewer -> {
@@ -90,41 +87,95 @@ public class Menu implements IMenu, Serializable {
                     player.updateInventory();
                 });
             }
-        }.runTask(plugin);
+        }.runTask(menuService.getPlugin());
 
     }
 
     public void open(HumanEntity player) {
-        updateInventory();
+        updateInventory(player);
         player.openInventory(inventory);
-        viewers.put(player.getName(), player);
-        MenuService.getInstance().registerMenu(this);
     }
 
-    @Override
     public void open(Player player) {
-        updateInventory();
+        updateInventory(player);
         player.openInventory(inventory);
-        viewers.put(player.getName(), player);
-        MenuService.getInstance().registerMenu(this);
+    }
+
+    public OnClose getInventoryClose() {
+        if (!hasInventoryClose()){
+            return event -> false;
+        }
+        return inventoryClose;
+    }
+    public OnClick getInventoryClick() {
+        if (!hasInventoryClick()){
+            return event -> false;
+        }
+        return inventoryClick;
+    }
+
+    public OnClick getOwnInventoryClick() {
+        if (!hasOwnInventoryClick()){
+            return event -> false;
+        }
+        return ownInventoryClick;
+    }
+
+    public OnDrop getInventoryDrop() {
+        if (!hasInventoryDrop()){
+            return event -> false;
+        }
+        return inventoryDrop;
+    }
+
+
+    public OnInteract getInventoryInteract() {
+        if (!hasInventoryInteract()){
+            return event -> false;
+        }
+        return inventoryInteract;
+    }
+
+    public OnClick getOutsideClick() {
+        if (!hasOutsideClick()){
+            return event -> false;
+        }
+        return outsideClick;
+    }
+
+    public void close(){
+        inventory.getViewers().forEach(HumanEntity::closeInventory);
     }
 
     public void close(Player player) {
         if (inventory.getViewers().contains(player)) {
             player.closeInventory();
-            viewers.remove(player.getName());
         }
     }
 
-    public boolean hasOnClose() {
-        return onClose != null;
+    public boolean hasInventoryClose() {
+        return inventoryClose != null;
     }
 
-    public boolean hasOnClick() {
-        return click != null;
+    public boolean hasInventoryClick() {
+        return inventoryClick != null;
     }
 
-    public boolean hasOnDrop() {
-        return onDrop != null;
+    public boolean hasOwnInventoryClick() {
+        return ownInventoryClick != null;
+    }
+
+    public boolean hasInventoryDrop() {
+        return inventoryDrop != null;
+    }
+
+    public boolean hasInventoryInteract(){
+         return inventoryInteract != null;
+    }
+    public boolean hasInventoryDrag(){
+        return inventoryDrag != null;
+    }
+    public boolean hasOutsideClick() {
+        return outsideClick != null;
     }
 }

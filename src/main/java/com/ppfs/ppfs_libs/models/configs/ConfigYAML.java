@@ -1,10 +1,14 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.configs;
 
-import com.ppfs.ppfs_libs.service.logger.LoggerService;
-import com.ppfs.ppfs_libs.service.logger.PaperLogger;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +16,8 @@ import java.lang.reflect.Field;
 
 public abstract class ConfigYAML{
 
-    private static final PaperLogger logger = LoggerService.getInstance().getOrCreateLogger("ConfigYAML");
 
+    private static final Logger log = LoggerFactory.getLogger(ConfigYAML.class);
     protected transient File file;
     protected transient FileConfiguration yamlConfig;
     protected transient Class<? extends ConfigYAML> clazz;
@@ -23,15 +27,15 @@ public abstract class ConfigYAML{
      */
     public static <T extends ConfigYAML> void save(T instance) {
         if (instance.file == null || instance.yamlConfig == null) {
-            logger.error("Ссылка на файл или FileConfiguration отсутствует в экземпляре конфигурации.");
+            log.error("Ссылка на файл или FileConfiguration отсутствует в экземпляре конфигурации.");
             throw new IllegalStateException("Ссылка на файл или FileConfiguration отсутствует в экземпляре конфигурации.");
         }
 
         try {
             instance.yamlConfig.save(instance.file);
-            logger.info("Конфигурация успешно сохранена в файл: " + instance.file.getAbsolutePath());
+            log.info("Конфигурация успешно сохранена в файл: {}", instance.file.getAbsolutePath());
         } catch (IOException e) {
-            logger.error("Ошибка при сохранении конфигурации в файл: " + instance.file.getAbsolutePath(), e);
+            log.error("Ошибка при сохранении конфигурации в файл: {}", instance.file.getAbsolutePath(), e);
             throw new RuntimeException("Ошибка при сохранении конфигурации.", e);
         }
     }
@@ -49,7 +53,7 @@ public abstract class ConfigYAML{
     public static <T extends ConfigYAML> T load(File file, Class<T> clazz) {
         try {
             if (!file.exists()) {
-                logger.warning("Файл конфигурации не найден, создается новый: " + file.getAbsolutePath());
+                log.warn("Файл конфигурации не найден, создается новый: {}", file.getAbsolutePath());
                 T instance = clazz.getDeclaredConstructor().newInstance();
                 instance.setFile(file);
                 instance.yamlConfig = YamlConfiguration.loadConfiguration(file);
@@ -64,10 +68,10 @@ public abstract class ConfigYAML{
             instance.yamlConfig = yamlConfig;
             instance.setClazz(clazz);
 
-            logger.info("Конфигурация успешно загружена из файла: " + file.getAbsolutePath());
+            log.info("Конфигурация успешно загружена из файла: {}", file.getAbsolutePath());
             return instance;
         } catch (Exception e) {
-            logger.error("Ошибка при загрузке конфигурации из файла: " + file.getAbsolutePath(), e);
+            log.error("Ошибка при загрузке конфигурации из файла: {}", file.getAbsolutePath(), e);
             throw new RuntimeException("Ошибка при загрузке конфигурации.", e);
         }
     }
@@ -93,17 +97,17 @@ public abstract class ConfigYAML{
      */
     public void reload() {
         if (this.file == null || this.clazz == null) {
-            logger.error("Ссылка на файл или класс отсутствует, невозможно перезагрузить конфигурацию.");
+            log.error("Ссылка на файл или класс отсутствует, невозможно перезагрузить конфигурацию.");
             throw new IllegalStateException("Ссылка на файл или класс отсутствует, невозможно перезагрузить.");
         }
         try {
-            logger.info("Перезагрузка конфигурации из файла: " + file.getAbsolutePath());
+            log.info("Перезагрузка конфигурации из файла: {}", file.getAbsolutePath());
             ConfigYAML newInstance = load(this.file, this.clazz);
             if (newInstance != null) {
                 this.copyFrom(newInstance);
             }
         } catch (Exception e) {
-            logger.error("Ошибка при перезагрузке конфигурации из файла: " + file.getAbsolutePath(), e);
+            log.error("Ошибка при перезагрузке конфигурации из файла: {}", file.getAbsolutePath(), e);
             throw new RuntimeException("Ошибка при перезагрузке конфигурации.", e);
         }
     }
@@ -113,7 +117,7 @@ public abstract class ConfigYAML{
      */
     protected void copyFrom(ConfigYAML other) {
         if (other == null) {
-            logger.error("Другой экземпляр конфигурации не может быть null.");
+            log.error("Другой экземпляр конфигурации не может быть null.");
             throw new IllegalArgumentException("Другой экземпляр не может быть null.");
         }
 
@@ -130,7 +134,7 @@ public abstract class ConfigYAML{
                     Object value = field.get(other);
                     field.set(this, value);
                 } catch (IllegalAccessException | IllegalArgumentException e) {
-                    logger.error("Ошибка при копировании поля: " + field.getName(), e);
+                    log.error("Ошибка при копировании поля: {}", field.getName(), e);
                     throw new RuntimeException("Не удалось скопировать поле: " + field.getName(), e);
                 }
             }

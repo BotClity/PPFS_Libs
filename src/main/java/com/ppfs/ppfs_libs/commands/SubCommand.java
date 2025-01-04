@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.commands;
 
 import lombok.Getter;
@@ -47,10 +51,10 @@ public abstract class SubCommand {
     /**
      * Выполняет команду. Если есть вложенные подкоманды, передает управление им.
      *
-     * @param sender Отправитель команды (игрок или консоль).
+     * @param sender  Отправитель команды (игрок или консоль).
      * @param command Объект команды.
-     * @param label Лейбл команды (основное имя команды).
-     * @param args Аргументы команды.
+     * @param label   Лейбл команды (основное имя команды).
+     * @param args    Аргументы команды.
      */
     public void execute(CommandSender sender, Command command, String label, String... args) {
         if (onlyPlayers && !(sender instanceof Player)) {
@@ -75,7 +79,7 @@ public abstract class SubCommand {
      * Предоставляет список возможных завершений для автодополнения.
      *
      * @param sender Отправитель команды.
-     * @param args Аргументы команды.
+     * @param args   Аргументы команды.
      * @return Список возможных завершений.
      */
     public List<String> complete(CommandSender sender, String... args) {
@@ -94,10 +98,10 @@ public abstract class SubCommand {
     /**
      * Основная логика команды, выполняется, если нет вложенных команд.
      *
-     * @param sender Отправитель команды.
+     * @param sender  Отправитель команды.
      * @param command Объект команды.
-     * @param label Лейбл команды.
-     * @param args Аргументы команды.
+     * @param label   Лейбл команды.
+     * @param args    Аргументы команды.
      */
     public void handle(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("This command has no specific action.");
@@ -106,10 +110,10 @@ public abstract class SubCommand {
     /**
      * Сообщает отправителю, что у него нет разрешения на выполнение команды.
      *
-     * @param sender Отправитель команды.
+     * @param sender  Отправитель команды.
      * @param command Объект команды.
-     * @param label Лейбл команды.
-     * @param args Аргументы команды.
+     * @param label   Лейбл команды.
+     * @param args    Аргументы команды.
      */
     public void noPermission(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("No permissions");
@@ -118,12 +122,23 @@ public abstract class SubCommand {
     /**
      * Сообщает отправителю, что команда может быть выполнена только игроками.
      *
-     * @param sender Отправитель команды.
+     * @param sender  Отправитель команды.
      * @param command Объект команды.
-     * @param label Лейбл команды.
-     * @param args Аргументы команды.
+     * @param label   Лейбл команды.
+     * @param args    Аргументы команды.
      */
     public void onlyPlayerExecute(CommandSender sender, Command command, String label, String... args) {
         sender.sendMessage("This command can only be executed by players.");
+    }
+
+
+    /**
+     * Формирует строку разрешения для подкоманды.
+     * <p>
+     * Если возвращает null, то разрешение не требуется.
+     * @return Строка разрешения для подкоманды (например, "command.subcommand").
+     */
+    public String getPermission(CommandSender sender, String... args) {
+        return null;
     }
 }

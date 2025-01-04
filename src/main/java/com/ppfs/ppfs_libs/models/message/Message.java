@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.message;
 
 import com.ppfs.ppfs_libs.PPFS_Libs;
@@ -9,6 +13,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -16,6 +22,7 @@ import java.util.regex.Pattern;
 
 @Getter
 public class Message {
+    private static final Logger log = LoggerFactory.getLogger(Message.class);
     private final LegacyComponentSerializer serializer = LegacyComponentSerializer.builder()
             .hexColors()
             .build();
@@ -114,8 +121,9 @@ public class Message {
 
         if (player != null) {
             send(player);
+
         } else {
-            PPFS_Libs.getPaperLogger().warning("Player with UUID " + uuid + " is not online.");
+            log.warn("Player with UUID {} is not online.", uuid);
         }
     }
 
@@ -134,7 +142,7 @@ public class Message {
         if (player != null) {
             sendActionBar(player);
         }else {
-            PPFS_Libs.getPaperLogger().warning("Player with UUID " + uuid + " is not online.");
+            log.warn("Player with UUID " + uuid + " is not online.");
         }
     }
 

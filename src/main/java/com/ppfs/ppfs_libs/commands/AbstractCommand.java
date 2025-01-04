@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.commands;
 
 import org.bukkit.command.*;
@@ -51,6 +55,18 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
     public void execute(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args){}
 
     /**
+     * Сообщает отправителю, что у него нет разрешения на выполнение команды.
+     *
+     * @param sender  Отправитель команды.
+     * @param command Объект команды.
+     * @param label   Лейбл команды.
+     * @param args    Аргументы команды.
+     */
+    public void noPermission(CommandSender sender, Command command, String label, String... args) {
+        sender.sendMessage("No permissions");
+    }
+
+    /**
      * Обрабатывает выполнение команды и делегирует вызовы подкомандам, если они существуют.
      *
      * @param sender  Отправитель команды.
@@ -65,7 +81,9 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
             SubCommand subCommand = subCommands.get(args[0].toLowerCase());
             if (subCommand != null) {
                 // Проверяем разрешения отправителя для подкоманды
-                if (!sender.hasPermission(getPermission(subCommand.getName()))) {
+                String permission = getPermission(sender, args);
+
+                if (permission != null && !sender.hasPermission(permission)) {
                     subCommand.noPermission(sender, command, s, args);
                     return true;
                 }
@@ -74,6 +92,13 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
         }
+
+        String permission = getPermission(sender, args);
+        if (permission != null && !sender.hasPermission(permission)) {
+            noPermission(sender, command, s, args);
+            return true;
+        }
+
         execute(sender, command, s, args);
         return true;
     }
@@ -81,11 +106,10 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
     /**
      * Формирует строку разрешения для подкоманды.
      *
-     * @param subCommandName Имя подкоманды.
      * @return Строка разрешения для подкоманды (например, "command.subcommand").
      */
-    private String getPermission(String subCommandName) {
-        return name.toLowerCase() + "." + subCommandName.toLowerCase();
+    public String getPermission(CommandSender sender, String... args) {
+        return null;
     }
 
     /**
@@ -116,7 +140,10 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             List<String> completions = new ArrayList<>();
             for (String key : subCommands.keySet()) {
-                if (sender.hasPermission(getPermission(key))) {
+
+                String permission = getPermission(sender, args);
+
+                if (permission != null && sender.hasPermission(permission)) {
                     completions.add(key);
                 }
             }

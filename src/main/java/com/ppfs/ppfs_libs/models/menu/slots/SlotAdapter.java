@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.menu.slots;
 
 import com.google.gson.*;

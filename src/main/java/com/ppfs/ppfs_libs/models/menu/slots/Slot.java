@@ -1,7 +1,11 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.menu.slots;
 
 import com.google.common.collect.Sets;
-import com.ppfs.ppfs_libs.listeners.menu.slots.SlotListener;
+import com.ppfs.ppfs_libs.models.menu.slots.actions.OnClick;
 import com.ppfs.ppfs_libs.models.message.Message;
 import com.ppfs.ppfs_libs.models.message.Placeholders;
 import lombok.EqualsAndHashCode;
@@ -31,7 +35,7 @@ public class Slot {
     private Message displayName;
     private Message lore;
     private Material material = Material.STONE;
-    private transient SlotListener listener;
+    private transient OnClick listener;
     private transient ItemMeta meta;
     private int position = -1;
     private int amount = 1;
@@ -126,7 +130,7 @@ public class Slot {
         return listener != null;
     }
 
-    public Slot setListener(SlotListener listener) {
+    public Slot setListener(OnClick listener) {
         this.listener = listener;
         return this;
     }
@@ -296,6 +300,13 @@ public class Slot {
 
         item.setItemMeta(itemMeta);
         return item;
+    }
+
+    public OnClick getListener(){
+        if (listener == null){
+            return event -> false;
+        }
+        return listener;
     }
 
     public static class Builder {

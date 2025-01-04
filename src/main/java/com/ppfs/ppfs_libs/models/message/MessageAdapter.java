@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.message;
 
 import com.google.gson.*;
@@ -27,7 +31,6 @@ public class MessageAdapter implements JsonSerializer<Message>, JsonDeserializer
             }
             throw new JsonParseException("Некорректный формат ключа 'message'.");
         } catch (Exception e) {
-            PPFS_Libs.getPaperLogger().error("Ошибка десериализации JSON: " + e.getMessage());
             throw new JsonParseException("Ошибка десериализации сообщения.", e);
         }
     }
@@ -46,8 +49,6 @@ public class MessageAdapter implements JsonSerializer<Message>, JsonDeserializer
             object.add("message", jsonArray);
             return object;
         } catch (Exception e) {
-            PPFS_Libs.getPaperLogger().error("Ошибка сериализации объекта Message: " + e.getMessage());
-            PPFS_Libs.getPaperLogger().error("Исходный объект: " + src.toString());
             throw new JsonParseException("Ошибка сериализации сообщения.", e);
         }
     }

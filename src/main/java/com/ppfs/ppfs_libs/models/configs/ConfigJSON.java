@@ -1,3 +1,7 @@
+// PPFS_Libs Plugin
+// Авторские права (c) 2024 PPFSS
+// Лицензия: MIT
+
 package com.ppfs.ppfs_libs.models.configs;
 
 import com.google.gson.Gson;
@@ -7,10 +11,10 @@ import com.ppfs.ppfs_libs.models.menu.slots.Slot;
 import com.ppfs.ppfs_libs.models.menu.slots.SlotAdapter;
 import com.ppfs.ppfs_libs.models.message.Message;
 import com.ppfs.ppfs_libs.models.message.MessageAdapter;
-import com.ppfs.ppfs_libs.service.logger.LoggerService;
-import com.ppfs.ppfs_libs.service.logger.PaperLogger;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -21,7 +25,6 @@ import java.nio.file.Files;
 
 public abstract class ConfigJSON{
 
-    private static final PaperLogger logger = LoggerService.getInstance().getOrCreateLogger("ConfigJSON");
     @Getter
     private final static Gson gson = new GsonBuilder()
             .registerTypeAdapter(Message.class, new MessageAdapter())
@@ -30,6 +33,7 @@ public abstract class ConfigJSON{
             .setLenient()
             .setPrettyPrinting()
             .create();
+    private static final Logger log = LoggerFactory.getLogger(ConfigJSON.class);
 
     protected transient File file;
     protected transient Class<? extends ConfigJSON> clazz;
@@ -39,15 +43,15 @@ public abstract class ConfigJSON{
      */
     public static <T extends ConfigJSON> void save(T instance) throws IOException {
         if (instance.file == null) {
-            logger.error("Ссылка на файл отсутствует в экземпляре конфигурации.");
+            log.error("Ссылка на файл отсутствует в экземпляре конфигурации.");
             throw new IllegalStateException("Ссылка на файл отсутствует в экземпляре конфигурации.");
         }
 
         try (FileWriter writer = new FileWriter(instance.file, StandardCharsets.UTF_8)) {
             gson.toJson(instance, writer);
-            logger.info("Конфигурация успешно сохранена в файл: " + instance.file.getAbsolutePath());
+            log.info("Конфигурация успешно сохранена в файл: {}", instance.file.getAbsolutePath());
         } catch (IOException e) {
-            logger.error("Ошибка при сохранении конфигурации в файл: " + instance.file.getAbsolutePath(), e);
+            log.error("Ошибка при сохранении конфигурации в файл: {}", instance.file.getAbsolutePath(), e);
             throw e;
         }
     }
@@ -59,7 +63,7 @@ public abstract class ConfigJSON{
         try {
             save(this);
         } catch (IOException e) {
-            logger.error("Ошибка при сохранении конфигурации.", e);
+            log.error("Ошибка при сохранении конфигурации.", e);
             throw new RuntimeException("Ошибка при сохранении конфигурации.", e);
         }
     }
@@ -70,7 +74,7 @@ public abstract class ConfigJSON{
     public static <T extends ConfigJSON> T load(File file, Class<T> clazz) {
         try {
             if (!file.exists()) {
-                logger.warning("Файл конфигурации не найден, создается новый: " + file.getAbsolutePath());
+                log.warn("Файл конфигурации не найден, создается новый: {}", file.getAbsolutePath());
                 T instance = clazz.getDeclaredConstructor().newInstance();
                 instance.setFile(file);
                 instance.setClazz(clazz);
@@ -86,14 +90,13 @@ public abstract class ConfigJSON{
                 instance.setFile(file);
                 instance.setClazz(clazz);
             }
-            logger.debug("Содержимое JSON:\n" + getFaultyJsonSnippet(file));
             return instance;
         } catch (JsonSyntaxException e) {
-            logger.syncError("Ошибка синтаксиса JSON: " + e.getMessage());
-            logger.syncError("Содержимое JSON, вызвавшее ошибку:\n" + getFaultyJsonSnippet(file));
+            log.error("Ошибка синтаксиса JSON: {}", e.getMessage());
+            log.error("Содержимое JSON, вызвавшее ошибку:\n{}", getFaultyJsonSnippet(file));
             throw new RuntimeException("Ошибка синтаксиса JSON в файле: " + file.getName(), e);
         } catch (Exception e) {
-            logger.syncError("Общая ошибка при загрузке конфигурации из файла: " + file.getAbsolutePath(), e);
+            log.error("Общая ошибка при загрузке конфигурации из файла: {}", file.getAbsolutePath(), e);
             throw new RuntimeException("Ошибка при загрузке конфигурации.", e);
         }
     }
@@ -130,17 +133,17 @@ public abstract class ConfigJSON{
      */
     public void reload() {
         if (this.file == null || this.clazz == null) {
-            logger.error("Ссылка на файл или класс отсутствует, невозможно перезагрузить конфигурацию.");
+            log.error("Ссылка на файл или класс отсутствует, невозможно перезагрузить конфигурацию.");
             throw new IllegalStateException("Ссылка на файл или класс отсутствует, невозможно перезагрузить.");
         }
         try {
-            logger.info("Перезагрузка конфигурации из файла: " + file.getAbsolutePath());
+            log.info("Перезагрузка конфигурации из файла: {}", file.getAbsolutePath());
             ConfigJSON newInstance = load(this.file, this.clazz);
             if (newInstance != null) {
                 this.copyFrom(newInstance);
             }
         } catch (Exception e) {
-            logger.error("Ошибка при перезагрузке конфигурации из файла: " + file.getAbsolutePath(), e);
+            log.error("Ошибка при перезагрузке конфигурации из файла: {}", file.getAbsolutePath(), e);
             throw e;
         }
     }
@@ -150,7 +153,7 @@ public abstract class ConfigJSON{
      */
     protected void copyFrom(ConfigJSON other) {
         if (other == null) {
-            logger.error("Другой экземпляр конфигурации не может быть null.");
+            log.error("Другой экземпляр конфигурации не может быть null.");
             throw new IllegalArgumentException("Другой экземпляр не может быть null.");
         }
 
@@ -167,7 +170,7 @@ public abstract class ConfigJSON{
                     Object value = field.get(other);
                     field.set(this, value);
                 } catch (IllegalAccessException | IllegalArgumentException e) {
-                    logger.error("Ошибка при копировании поля: " + field.getName(), e);
+                    log.error("Ошибка при копировании поля: {}", field.getName(), e);
                     throw new RuntimeException("Не удалось скопировать поле: " + field.getName(), e);
                 }
             }
