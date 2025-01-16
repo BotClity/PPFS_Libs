@@ -57,21 +57,41 @@ public class Slot {
         this.lore = lore;
     }
 
+    /**
+     * Устанавливает мета-данные для слота.
+     * @param meta объект ItemMeta.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setMeta(ItemMeta meta) {
         this.meta = meta;
         return this;
     }
 
+    /**
+     * Устанавливает название слота в виде строки.
+     * @param displayName название.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setDisplayName(String displayName) {
         this.displayName = new Message(displayName);
         return this;
     }
 
+    /**
+     * Устанавливает название слота в виде объекта Message.
+     * @param displayName объект Message.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setDisplayName(Message displayName) {
         this.displayName = displayName;
         return this;
     }
 
+    /**
+     * Добавляет дополнительное название к текущему названию слота.
+     * @param additionalDisplayName объект Message.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addDisplayName(Message additionalDisplayName) {
         if (this.displayName == null) {
             this.displayName = additionalDisplayName;
@@ -81,10 +101,19 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Проверяет, установлено ли название для слота.
+     * @return true, если название установлено, иначе false.
+     */
     public boolean hasDisplayName() {
         return displayName != null;
     }
 
+    /**
+     * Устанавливает описание (lore) слота в виде строк.
+     * @param lore описание.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setLore(String... lore) {
         if (this.lore == null) {
             this.lore = new Message(lore);
@@ -94,11 +123,21 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Устанавливает описание (lore) слота в виде объекта Message.
+     * @param lore объект Message.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setLore(Message lore) {
         this.lore = lore;
         return this;
     }
 
+    /**
+     * Добавляет дополнительное описание к текущему описанию слота.
+     * @param lore объект Message.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addLore(Message lore) {
         if (this.lore == null) {
             this.lore = lore;
@@ -108,6 +147,11 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Добавляет дополнительное описание к текущему описанию слота в виде строк.
+     * @param lore строки описания.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addLore(String... lore) {
         if (this.lore == null) {
             this.lore = new Message(lore);
@@ -117,69 +161,136 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Проверяет, установлено ли описание для слота.
+     * @return true, если описание установлено, иначе false.
+     */
     public boolean hasLore() {
         return lore != null;
     }
 
+    /**
+     * Устанавливает материал для слота.
+     * @param material материал.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setMaterial(Material material) {
         this.material = material;
         return this;
     }
 
+    /**
+     * Проверяет, установлен ли слушатель для слота.
+     * @return true, если слушатель установлен, иначе false.
+     */
     public boolean hasListener() {
         return listener != null;
     }
 
+    /**
+     * Устанавливает слушатель кликов для слота.
+     * @param listener объект OnClick.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setListener(OnClick listener) {
         this.listener = listener;
         return this;
     }
 
+    /**
+     * Устанавливает позицию слота в меню.
+     * @param position позиция.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setPosition(int position) {
         this.position = position;
         return this;
     }
 
+    /**
+     * Увеличивает количество предметов в слоте.
+     * @param amount количество для добавления.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addAmount(int amount) {
         this.amount += amount;
         return this;
     }
 
+    /**
+     * Устанавливает количество предметов в слоте.
+     * @param amount количество.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setAmount(int amount) {
         this.amount = amount;
         return this;
     }
 
+    /**
+     * Устанавливает зачарования для слота.
+     * @param enchantments карта зачарований.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setEnchantments(Map<Enchantment, Integer> enchantments) {
         this.enchantments = enchantments;
         return this;
     }
 
+    /**
+     * Добавляет зачарование к слоту.
+     * @param enchantment зачарование.
+     * @param level уровень зачарования.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addEnchantment(Enchantment enchantment, int level) {
         this.enchantments.put(enchantment, level);
         return this;
     }
 
+    /**
+     * Удаляет все зачарования из слота.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot clearEnchantments() {
         this.enchantments = new ConcurrentHashMap<>();
         return this;
     }
 
+    /**
+     * Удаляет конкретное зачарование из слота.
+     * @param enchantment зачарование для удаления.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot removeEnchantment(Enchantment enchantment) {
         this.enchantments.remove(enchantment);
         return this;
     }
 
+    /**
+     * Устанавливает пользовательские данные модели для слота.
+     * @param customModelData данные модели.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setCustomModelData(int customModelData) {
         this.customModelData = customModelData;
         return this;
     }
 
+    /**
+     * Сбрасывает пользовательские данные модели до значения по умолчанию (0).
+     * @return обновленный экземпляр Slot.
+     */
     public Slot resetCustomModelData() {
         this.customModelData = 0;
         return this;
     }
 
+    /**
+     * Добавляет флаги предмета к слоту.
+     * @param itemFlags флаги предмета.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addItemFlag(ItemFlag... itemFlags) {
         if (itemFlags != null) {
             this.itemFlags.addAll(Arrays.asList(itemFlags));
@@ -187,25 +298,50 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Устанавливает флаги предмета для слота.
+     * @param itemFlags флаги предмета.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setItemFlags(ItemFlag... itemFlags) {
         this.itemFlags = itemFlags != null ? Sets.newHashSet(itemFlags) : new HashSet<>();
         return this;
     }
 
+    /**
+     * Устанавливает флаги предмета для слота с использованием множества.
+     * @param itemFlags множество флагов предмета.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot setItemFlags(@NotNull Set<ItemFlag> itemFlags) {
         this.itemFlags = itemFlags;
         return this;
     }
 
+    /**
+     * Добавляет множество флагов предмета к текущим флагам.
+     * @param itemFlags множество флагов.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot addItemFlags(Set<ItemFlag> itemFlags) {
         this.itemFlags.addAll(itemFlags);
         return this;
     }
 
+    /**
+     * Создает экземпляр слота из ItemStack.
+     * @param item объект ItemStack.
+     * @return новый экземпляр Slot.
+     */
     public static Slot from(ItemStack item) {
         return new Slot().fromItemStack(item);
     }
 
+    /**
+     * Заполняет данные слота из ItemStack.
+     * @param item объект ItemStack.
+     * @return обновленный экземпляр Slot.
+     */
     public Slot fromItemStack(ItemStack item) {
         setMaterial(item.getType());
         setAmount(item.getAmount());
@@ -229,10 +365,20 @@ public class Slot {
         return this;
     }
 
+    /**
+     * Возвращает плейсхолдеры (placeholders).
+     * @param player объект HumanEntity (игрок).
+     * @return заполнители для слота.
+     */
     public Placeholders getPlaceholders(HumanEntity player) {
         return placeholders;
     }
 
+    /**
+     * Преобразует данные слота в ItemStack.
+     * @return объект ItemStack.
+     */
+    @Deprecated
     public ItemStack toItemStack() {
         ItemStack item = new ItemStack(material);
         item.setAmount(amount);
@@ -243,6 +389,11 @@ public class Slot {
         return item;
     }
 
+    /**
+     * Генерирует мета-данные (ItemMeta) для указанного ItemStack.
+     * @param item объект ItemStack.
+     * @return объект ItemMeta.
+     */
     public ItemMeta getMeta(ItemStack item){
         ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
 
@@ -268,6 +419,12 @@ public class Slot {
         return meta;
     }
 
+    /**
+     * Генерирует мета-данные (ItemMeta) для указанного ItemStack.
+     * @param item объект ItemStack.
+     * @param player объект HumanEntity (игрок).
+     * @return объект ItemMeta.
+     */
     public ItemMeta getMeta(ItemStack item, HumanEntity player) {
         ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
 
@@ -292,6 +449,11 @@ public class Slot {
         return meta;
     }
 
+    /**
+     * Преобразует данные слота в ItemStack.
+     * @param player объект HumanEntity (игрок).
+     * @return объект ItemStack.
+     */
     public ItemStack toItemStack(HumanEntity player) {
         ItemStack item = new ItemStack(material);
         item.setAmount(amount);
@@ -302,6 +464,11 @@ public class Slot {
         return item;
     }
 
+    /**
+     * Возвращает слушатель кликов для слота.
+     * Если слушатель не установлен, возвращается слушатель по умолчанию, который ничего не делает.
+     * @return объект OnClick.
+     */
     public OnClick getListener(){
         if (listener == null){
             return event -> false;
@@ -309,29 +476,57 @@ public class Slot {
         return listener;
     }
 
+    /**
+     * Вложенный класс для построения (Builder) экземпляров Slot.
+     */
     public static class Builder {
         private final Slot slot = new Slot();
 
+        /**
+         * Устанавливает материал для слота.
+         * @param material материал.
+         * @return экземпляр Builder.
+         */
         public Builder material(Material material) {
             slot.setMaterial(material);
             return this;
         }
 
+        /**
+         * Устанавливает название для слота.
+         * @param displayName объект Message.
+         * @return экземпляр Builder.
+         */
         public Builder displayName(Message displayName) {
             slot.setDisplayName(displayName);
             return this;
         }
 
+        /**
+         * Устанавливает описание для слота.
+         * @param lore объект Message.
+         * @return экземпляр Builder.
+         */
         public Builder lore(Message lore) {
             slot.setLore(lore);
             return this;
         }
 
+        /**
+         * Добавляет зачарование к слоту.
+         * @param enchantment зачарование.
+         * @param level уровень зачарования.
+         * @return экземпляр Builder.
+         */
         public Builder enchantment(Enchantment enchantment, int level) {
             slot.addEnchantment(enchantment, level);
             return this;
         }
 
+        /**
+         * Создает и возвращает настроенный экземпляр Slot.
+         * @return объект Slot.
+         */
         public Slot build() {
             return slot;
         }

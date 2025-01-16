@@ -22,10 +22,10 @@ public final class PPFS_Libs extends JavaPlugin {
 
         metrics = new Metrics(this, 24257);
 
-        registerListners();
+        registerListeners();
     }
 
-    private void registerListners(){
+    private void registerListeners(){
         PluginManager pm = getServer().getPluginManager();
 
         pm.registerEvents(new MenuListener(), this);

@@ -22,6 +22,7 @@ public class HeadSlot extends Slot {
     private OfflinePlayer owner = null;
 
     @Override
+    @Deprecated
     public ItemStack toItemStack() {
         return setupHeadValue(super.toItemStack());
     }
@@ -30,6 +31,7 @@ public class HeadSlot extends Slot {
     public ItemStack toItemStack(HumanEntity player) {
         return setupHeadValue(super.toItemStack());
     }
+
 
 
     private ItemStack setupHeadValue(ItemStack item){
@@ -64,11 +66,19 @@ public class HeadSlot extends Slot {
         return meta;
     }
 
+    /**
+    Устанавливает скин на голову из value
+    @param value значение скина
+     */
     public Slot setHeadValue(String value){
         this.textureValue = value;
         return this;
     }
 
+    /**
+     Устанавливает скин на голову из Offline player
+     @param player Офлайн игрок
+     */
     public void setHeadOwner (OfflinePlayer player){
             owner = player;
         }

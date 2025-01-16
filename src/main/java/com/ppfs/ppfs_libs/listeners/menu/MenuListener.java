@@ -6,6 +6,7 @@ package com.ppfs.ppfs_libs.listeners.menu;
 
 import com.ppfs.ppfs_libs.models.menu.Menu;
 import com.ppfs.ppfs_libs.models.menu.slots.Slot;
+import com.ppfs.ppfs_libs.service.MenuService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;

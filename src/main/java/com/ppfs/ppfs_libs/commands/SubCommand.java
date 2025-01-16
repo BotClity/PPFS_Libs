@@ -35,6 +35,7 @@ public abstract class SubCommand {
     @Setter
     private boolean onlyPlayers = true;
 
+
     public SubCommand(String name) {
         this.name = name;
     }

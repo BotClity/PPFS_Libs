@@ -81,7 +81,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabCompleter {
             SubCommand subCommand = subCommands.get(args[0].toLowerCase());
             if (subCommand != null) {
                 // Проверяем разрешения отправителя для подкоманды
-                String permission = getPermission(sender, args);
+                String permission = subCommand.getPermission(sender, args);
 
                 if (permission != null && !sender.hasPermission(permission)) {
                     subCommand.noPermission(sender, command, s, args);
