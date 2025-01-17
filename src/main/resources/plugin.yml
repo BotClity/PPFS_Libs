@@ -3,3 +3,5 @@ version: 0.1.1
 main: com.ppfs.ppfs_libs.PPFS_Libs
 load: STARTUP
 api-version: '1.16'
+softdepend:
+  - PlaceholderAPI

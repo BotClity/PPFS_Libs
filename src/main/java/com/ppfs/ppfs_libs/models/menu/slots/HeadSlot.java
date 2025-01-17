@@ -9,7 +9,7 @@ import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -28,8 +28,8 @@ public class HeadSlot extends Slot {
     }
 
     @Override
-    public ItemStack toItemStack(HumanEntity player) {
-        return setupHeadValue(super.toItemStack());
+    public ItemStack toItemStack(Player player) {
+        return setupHeadValue(super.toItemStack(player));
     }
 
 
@@ -56,8 +56,8 @@ public class HeadSlot extends Slot {
     }
 
     @Override
-    public ItemMeta getMeta(ItemStack item, HumanEntity player) {
-        return setupHeadOwner(super.getMeta(item));
+    public ItemMeta getMeta(ItemStack item, Player player) {
+        return setupHeadOwner(super.getMeta(item, player));
     }
 
     private ItemMeta setupHeadOwner(ItemMeta meta){

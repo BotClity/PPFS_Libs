@@ -71,7 +71,7 @@ public class Menu implements Serializable, InventoryHolder {
         return this;
     }
 
-    public void updateInventory(HumanEntity player) {
+    public void updateInventory(Player player) {
         if (menuService == null) return;
         new BukkitRunnable() {
             @Override
@@ -91,15 +91,11 @@ public class Menu implements Serializable, InventoryHolder {
 
     }
 
-    public void open(HumanEntity player) {
-        updateInventory(player);
-        player.openInventory(inventory);
-    }
-
     public void open(Player player) {
         updateInventory(player);
         player.openInventory(inventory);
     }
+
 
     public OnClose getInventoryClose() {
         if (!hasInventoryClose()){

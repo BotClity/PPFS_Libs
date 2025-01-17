@@ -7,6 +7,7 @@ package com.ppfs.ppfs_libs.listeners.menu;
 import com.ppfs.ppfs_libs.models.menu.Menu;
 import com.ppfs.ppfs_libs.models.menu.slots.Slot;
 import com.ppfs.ppfs_libs.service.MenuService;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
@@ -50,7 +51,7 @@ public class MenuListener implements Listener {
         if (event.getInventory().getHolder() instanceof Menu menu) {
             menu.getInventoryClose().run(event);
             if (event.getReason() == InventoryCloseEvent.Reason.PLAYER &&  !menu.isCanBeClosed()){
-                menu.open(event.getPlayer());
+                menu.open((Player) event.getPlayer());
                 return;
             }
             menu.getMenuService().onInventoryClose(event);

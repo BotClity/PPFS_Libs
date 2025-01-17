@@ -16,6 +16,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 @ToString
 @EqualsAndHashCode
-public class Slot {
+public class Slot implements ISlot{
     private Message displayName;
     private Message lore;
     private Material material = Material.STONE;
@@ -422,20 +423,20 @@ public class Slot {
     /**
      * Генерирует мета-данные (ItemMeta) для указанного ItemStack.
      * @param item объект ItemStack.
-     * @param player объект HumanEntity (игрок).
+     * @param player объект игрок.
      * @return объект ItemMeta.
      */
-    public ItemMeta getMeta(ItemStack item, HumanEntity player) {
+    public ItemMeta getMeta(ItemStack item, Player player) {
         ItemMeta meta = this.meta != null ? this.meta : item.getItemMeta();
 
         if (displayName != null) {
             displayName.addPlaceholders(getPlaceholders(player));
-            meta.displayName(displayName.getComponent());
+            meta.displayName(displayName.getComponent(player));
         }
 
         if (lore != null) {
             lore.addPlaceholders(getPlaceholders(player));
-            meta.lore(lore.getComponents());
+            meta.lore(lore.getComponents(player));
         }
 
         enchantments.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
@@ -454,7 +455,7 @@ public class Slot {
      * @param player объект HumanEntity (игрок).
      * @return объект ItemStack.
      */
-    public ItemStack toItemStack(HumanEntity player) {
+    public ItemStack toItemStack(Player player) {
         ItemStack item = new ItemStack(material);
         item.setAmount(amount);
 

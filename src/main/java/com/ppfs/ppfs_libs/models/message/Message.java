@@ -1,11 +1,7 @@
-// PPFS_Libs Plugin
-// Авторские права (c) 2024 PPFSS
-// Лицензия: MIT
-
 package com.ppfs.ppfs_libs.models.message;
 
-import com.ppfs.ppfs_libs.PPFS_Libs;
 import lombok.Getter;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -22,28 +18,23 @@ import java.util.regex.Pattern;
 
 @Getter
 public class Message {
+    private static final boolean placeholdersApi = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
     private static final Logger log = LoggerFactory.getLogger(Message.class);
-    private final LegacyComponentSerializer serializer = LegacyComponentSerializer.builder()
-            .hexColors()
-            .build();
+    private final LegacyComponentSerializer serializer = LegacyComponentSerializer.builder().hexColors().build();
     private final List<String> rawMessages = new ArrayList<>();
     private final transient Placeholders placeholders = new Placeholders();
     private static final Pattern TAG_PATTERN = Pattern.compile("<(/?)([a-zA-Z_#0-9]+)>");
 
-    public Message(String message) {
-        this.rawMessages.add(message);
-    }
-
     public Message(String... messages) {
-        this.rawMessages.addAll(Arrays.asList(messages));
+        rawMessages.addAll(Arrays.asList(messages));
     }
 
     public Message(List<String> messages) {
-        this.rawMessages.addAll(messages);
+        rawMessages.addAll(messages);
     }
 
-    public Message(Component... components){
-        for (Component component: components){
+    public Message(Component... components) {
+        for (Component component : components) {
             rawMessages.add(serializer.serialize(component));
         }
     }
@@ -72,10 +63,6 @@ public class Message {
         return this;
     }
 
-    public void addPlaceholders(String placeholder, String value) {
-        placeholders.add(new Placeholders().add(placeholder, value));
-    }
-
     public void addPlaceholders(String placeholder, String... values) {
         placeholders.add(new Placeholders().add(placeholder, values));
     }
@@ -85,20 +72,34 @@ public class Message {
     }
 
     public Component getComponent() {
-        Component result = Component.empty();
-        for (String rawMessage : rawMessages) {
-            List<String> parsedMessage = placeholders.apply(rawMessage);
-            for (String str : parsedMessage) {
-                result = result.append(parseTagsToComponent(str));
-            }
-        }
-        return result;
+        return getParsedComponents().stream().reduce(Component.empty(), Component::append);
+    }
+
+    public Component getComponent(Player player) {
+        return getParsedComponents(player).stream().reduce(Component.empty(), Component::append);
     }
 
     public List<Component> getComponents() {
+        return getParsedComponents();
+    }
+
+    public List<Component> getComponents(Player player) {
+        return getParsedComponents(player);
+    }
+
+    private List<Component> getParsedComponents() {
+        return parseMessages(rawMessages, null);
+    }
+
+    private List<Component> getParsedComponents(Player player) {
+        return parseMessages(rawMessages, player);
+    }
+
+    private List<Component> parseMessages(List<String> messages, Player player) {
         List<Component> components = new ArrayList<>();
-        for (String rawMessage : rawMessages) {
+        for (String rawMessage : messages) {
             List<String> parsedMessage = placeholders.apply(rawMessage);
+            parsedMessage = replacePlaceholders(parsedMessage, player);
             for (String str : parsedMessage) {
                 components.add(parseTagsToComponent(str));
             }
@@ -106,49 +107,56 @@ public class Message {
         return components;
     }
 
-    public void send(Audience audience) {
-        for (String rawMessage : rawMessages) {
-            List<String> parsedMessage = placeholders.apply(rawMessage);
-            for (String str : parsedMessage) {
-                Component component = parseTagsToComponent(str);
-                audience.sendMessage(component);
-            }
+    private List<String> replacePlaceholders(List<String> messages, Player player) {
+        return messages.stream().map(msg -> replacePlaceholders(msg, player)).toList();
+    }
+
+    private String replacePlaceholders(String message, Player player) {
+        if (player != null && placeholdersApi) {
+            return PlaceholderAPI.setPlaceholders(player, message);
         }
+        return message;
+    }
+
+    public void send(Audience audience) {
+        rawMessages.forEach(rawMessage -> sendToAudience(audience, rawMessage));
     }
 
     public void send(UUID uuid) {
         Player player = Bukkit.getPlayer(uuid);
-
         if (player != null) {
             send(player);
-
         } else {
             log.warn("Player with UUID {} is not online.", uuid);
         }
     }
 
     public void sendActionBar(Audience audience) {
-        for (String rawMessage : rawMessages) {
-            List<String> parsedMessage = placeholders.apply(rawMessage);
-            for (String str : parsedMessage) {
-                Component component = parseTagsToComponent(str);
-                audience.sendActionBar(component);
-            }
-        }
+        rawMessages.forEach(rawMessage -> sendActionBarToAudience(audience, rawMessage));
     }
 
     public void sendActionBar(UUID uuid) {
         Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
             sendActionBar(player);
-        }else {
-            log.warn("Player with UUID " + uuid + " is not online.");
+        } else {
+            log.warn("Player with UUID {} is not online.", uuid);
         }
+    }
+
+    private void sendToAudience(Audience audience, String rawMessage) {
+        List<String> parsedMessage = placeholders.apply(rawMessage);
+        parsedMessage.forEach(str -> audience.sendMessage(parseTagsToComponent(str)));
+    }
+
+    private void sendActionBarToAudience(Audience audience, String rawMessage) {
+        List<String> parsedMessage = placeholders.apply(rawMessage);
+        parsedMessage.forEach(str -> audience.sendActionBar(parseTagsToComponent(str)));
     }
 
     private Component parseTagsToComponent(String message) {
         Component result = Component.empty();
-        result = result.style(style->style.decoration(TextDecoration.ITALIC, false));
+        result = result.style(style -> style.decoration(TextDecoration.ITALIC, false));
         Deque<TextColor> colorStack = new ArrayDeque<>();
         Deque<TextDecoration> decorationStack = new ArrayDeque<>();
 
@@ -159,39 +167,17 @@ public class Message {
             String textBeforeTag = message.substring(lastEnd, matcher.start());
             if (!textBeforeTag.isEmpty()) {
                 Component textComponent = Component.text(textBeforeTag);
-
-                if (!colorStack.isEmpty()) {
-                    textComponent = textComponent.color(colorStack.peek());
-                }
-                for (TextDecoration decoration : decorationStack) {
-                    textComponent = textComponent.decorate(decoration);
-                }
+                applyStyles(colorStack, decorationStack, textComponent);
                 result = result.append(textComponent);
             }
 
             String tagType = matcher.group(1);
             String tagName = matcher.group(2);
 
-            if (tagType.isEmpty()) { // Открывающий тег
-                TextColor color = getTextColor(tagName);
-                if (color != null) {
-                    colorStack.push(color);
-                } else {
-                    TextDecoration decoration = getTextDecoration(tagName);
-                    if (decoration != null) {
-                        decorationStack.push(decoration);
-                    }
-                }
-            } else { // Закрывающий тег
-                TextColor color = getTextColor(tagName);
-                if (color != null && !colorStack.isEmpty()) {
-                    colorStack.pop();
-                } else {
-                    TextDecoration decoration = getTextDecoration(tagName);
-                    if (decoration != null && !decorationStack.isEmpty()) {
-                        decorationStack.pop();
-                    }
-                }
+            if (tagType.isEmpty()) {
+                handleOpeningTag(colorStack, decorationStack, tagName);
+            } else {
+                handleClosingTag(colorStack, decorationStack, tagName);
             }
             lastEnd = matcher.end();
         }
@@ -199,15 +185,43 @@ public class Message {
         String remainingText = message.substring(lastEnd);
         if (!remainingText.isEmpty()) {
             Component textComponent = Component.text(remainingText);
-            if (!colorStack.isEmpty()) {
-                textComponent = textComponent.color(colorStack.peek());
-            }
-            for (TextDecoration decoration : decorationStack) {
-                textComponent = textComponent.decorate(decoration);
-            }
+            applyStyles(colorStack, decorationStack, textComponent);
             result = result.append(textComponent);
         }
         return result;
+    }
+
+    private void applyStyles(Deque<TextColor> colorStack, Deque<TextDecoration> decorationStack, Component textComponent) {
+        if (!colorStack.isEmpty()) {
+            textComponent = textComponent.color(colorStack.peek());
+        }
+        for (TextDecoration decoration : decorationStack) {
+            textComponent = textComponent.decorate(decoration);
+        }
+    }
+
+    private void handleOpeningTag(Deque<TextColor> colorStack, Deque<TextDecoration> decorationStack, String tagName) {
+        TextColor color = getTextColor(tagName);
+        if (color != null) {
+            colorStack.push(color);
+        } else {
+            TextDecoration decoration = getTextDecoration(tagName);
+            if (decoration != null) {
+                decorationStack.push(decoration);
+            }
+        }
+    }
+
+    private void handleClosingTag(Deque<TextColor> colorStack, Deque<TextDecoration> decorationStack, String tagName) {
+        TextColor color = getTextColor(tagName);
+        if (color != null && !colorStack.isEmpty()) {
+            colorStack.pop();
+        } else {
+            TextDecoration decoration = getTextDecoration(tagName);
+            if (decoration != null && !decorationStack.isEmpty()) {
+                decorationStack.pop();
+            }
+        }
     }
 
     private TextColor getTextColor(String tagName) {
