@@ -6,7 +6,7 @@
 
     <groupId>io.github.botclity</groupId>
     <artifactId>PPFS_Libs</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
 
     <name>PPFS_Libs</name>
